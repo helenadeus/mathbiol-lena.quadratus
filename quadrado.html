@@ -1,0 +1,210 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+  <title> O quadrado </title>
+ <!-- <script type='text/javascript' 
+        src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script> -->
+ <link rel="stylesheet" href="rightclickmenu.css" type="text/css"/> 
+ <script type="text/javascript" src="s3dbcall.js"></script> 
+ <script type="text/javascript" src="rightclickmenu.js"></script>
+ <script type="text/javascript" src="canvas.js"></script>
+ <script type="text/javascript" src="permission.js"></script>
+ <script type="text/javascript" src="s3db_uid.js"></script> 
+ <script type="text/javascript" src="intface.js"></script>
+ <script type="text/javascript" id="quadrado" src="quadrado.js"></script>
+ <script src="http://explorercanvas.googlecode.com/svn/trunk/excanvas.js"></script>
+ 
+
+ <style type="text/css">
+ .shifted {
+	  position: absolute;
+	  left: 40px; 
+	  font-family: Helvetica;
+	 
+ }
+
+ .pretty_cells {
+	border-width: 2px 2px 2px 2px;
+	padding: 1px 1px 1px 1px;
+	border-style: inset inset inset inset;
+	border-color: blue blue blue blue;
+	background-color: white;
+	height: 240px;
+	width: 350px;
+	
+	overflow: scroll;
+	-moz-border-radius: 8px 8px 8px 8px;
+ }
+
+ .permission_spans {
+ border: 2px solid white; 
+ font-size: small;
+ font-family: Courier New;
+ }
+ </style>
+ </head>
+
+<body onload="putTheImageInTheMiddle();">
+
+
+  <!--  <body onload="putTheImageInTheMiddle()"> -->
+
+	  
+			<img src="gradient_square90.png" id="blue_grad" style="position: absolute;top: 0px; left: 0px; height: 300px"/>
+			<span class="shifted" style="top: 5px; color: white; font-size: 50px">quadratus</span>
+			<div class="shifted" style="top: 60px; color: white; font-size: 14px">Quadratus is a tool that will let you change permissions on S3DB resources and see how they propagate to other users.</div>
+			<div id="login">
+				<table id="login_options" class="shifted" style="top: 120px; font-size: 14px; color: blue;">
+				<tr><td>Choose an S3DB deployment</td><td colspan="2"></td></tr>
+				
+				<tr><td>
+				<select id="url" onChange="display_other()" onClick="display_other()">
+					<option value="http://ibl.mdanderson.org/edu/" selected="selected">EDU deployment</option>
+					<option value="http://ibl.mdanderson.org/TCGA/">TCGA deployment</option>
+					<option value="http://ibl.mdanderson.org/similarity/">Similarity metrics deployment</option>
+					<option value="http://ibl.mdanderson.org/s3dbdemo3/">Demo deployment</option>
+					<option value="http://ibl.mdanderson.org/dev/">Dev deployment</option>
+					<option value="other">Other...</option>
+				</select>
+				</td>
+				<td>
+				
+				<select id="authority" onClick="if (this.value==='key') {display('key'); hide('username'); hide('password'); } else { hide('key'); display('username'); display('password'); } ">
+					<option value="s3db" selected="selected">Use my S3DB account</option>
+					<option value="google">Use my google account</option>
+					<option value="mdanderson">Use my MDA account</option>
+					<option value="key">Use the key</option>
+				</select>
+				</td>
+				<td>
+				<input type="text" id="username" value="type your username" onFocus="clean_default('username', 'type your username')">
+				</td>
+				<td>
+				<input type="text" id="password" value="type your password" onkeyup="checkForm()" onFocus="clean_default('password', 'type your password'); this.setAttribute('type', 'password')">
+				</td>
+				<td>
+				<input type="text" id="key" style="display: none" value="type your key" onkeyup="checkForm()" onFocus="clean_default('key', 'type your key'); this.setAttribute('type', 'password')">
+				</td>
+				<td><input id="go" type="button" value="Go!" style="display: none" onClick="trigger_s3db()"></td>
+				</tr>
+				<tr>
+				<td>
+				<input type="text" id="url_other" size="29" onkeyup="checkForm()" style="display:none">
+				</td>
+				
+				</tr>
+				</table>
+			</div>
+			<div id="login_text" class="shifted" style="display :none; top: 120px; font-size: 14px; color: blue" onClick="display('login'); hide('login_text'); hide('square'); s3db=[];">
+				(Logout)
+				
+			</div>
+			
+			<table id="square" class="shifted" style="top: 140px; font-size: 12px; color: blue; display: none">
+				<tr>
+					<td colspan=2>Select a project and a user to see how the permissions migrate to individual resources. Right-click on the assigned permissions (left side) to change permission level</td>
+				
+				</tr>
+				
+				<tr>
+					<td><input type="hidden" id="project_id" />Projects<div class="pretty_cells" id='projects' style="height: 170px"></div></td>
+					<td><div id="user_selected"></div><div id="users"></div></td>
+					<td>
+						
+					</td>
+				</tr>
+				
+				
+				<tr>
+					<td>Collections<div class="pretty_cells" id='collections'></div></td>
+					<td>Items<div class="pretty_cells" id='items'></div></td>
+					<td></td>
+				</tr>
+				<tr>
+					<td>Rules<div class="pretty_cells" id='rules'></div></td>
+					<td>Statements<div class="pretty_cells" id='statements'></div></td>
+					<td></td>
+				</tr>
+			
+			</table>
+				
+		<div style="position: absolute;top: 150px; left:900px; height: 300px;border-width: 2px 2px 2px 2px;padding: 1px 1px 1px 1px;border-color: blue blue blue blue;width: 300px; color: blue">
+			<table id="legend">
+				<tr>
+					<td><I>Permission:</I></td>
+				<td></td>
+				</tr>
+			
+			<tr>
+				
+				<td>Assigned</td>
+				<td>&nbsp;&nbsp;&nbsp;Effective</td>
+			</tr>
+			<tr>
+				
+				<td>
+				<span class="permission_spans" style="border-color: silver">&nbsp;V&nbsp;</span>
+				<span class="permission_spans" style="border-color: silver">&nbsp;C&nbsp;</span>
+				<span class="permission_spans" style="border-color: silver">&nbsp;U&nbsp;</span>
+				</td>
+				<td>
+				<span>&nbsp;&nbsp;&nbsp;</span>
+				<span class="permission_spans" style="border-color: silver">&nbsp;V&nbsp;</span>
+				<span class="permission_spans" style="border-color: silver">&nbsp;C&nbsp;</span>
+				<span class="permission_spans" style="border-color: silver">&nbsp;U&nbsp;</span>
+				</td>
+			</tr>
+			<tr>
+			<td colspan=2><BR></td>
+			</tr>
+			<tr>
+						<td>
+						<span class="permission_spans" style="border-color: silver; background-color: red">&nbsp;N&nbsp;</span>
+						</td>
+						<td>No permission</td>
+			</tr>
+			<tr>
+						<td>
+						<span class="permission_spans" style="border-color: silver; background-color: yellow">&nbsp;S&nbsp;</span>
+						</td>
+						<td>
+						Permission to <I title="Permission is granted to resources created by the user">"<U>self</U>"</I>
+						</td>
+			</tr>
+			<tr>
+						<td>
+						<span class="permission_spans" style="border-color: silver; background-color: green">&nbsp;Y&nbsp;</span>
+						</td>
+						<td>
+						Full Permission
+						</td>
+
+			</tr>
+			<tr>
+				<td><span class="permission_spans" style="border-color: silver">&nbsp;V&nbsp;</span></td>
+				<td>V - <I title="User can view/query the resource"><U>View</U></I></td>
+			</tr>
+			<tr>
+				<td><span class="permission_spans" style="border-color: silver">&nbsp;C&nbsp;</span></td>
+				<td>C - <I title='User can edit metadata associated with the resource'><U>Change</U></I></td>
+			</tr>
+			<tr>
+				<td><span class="permission_spans" style="border-color: silver">&nbsp;U&nbsp;</span></td>
+				<td>U - <I title='User can use the resource to add more resources'><U>Use</U></I></td>
+			</tr>
+			
+			
+			</table>
+		</div>
+		
+		<div id="canvas_div" style="position: absolute;top: 410px; left:920px; color: blue">
+			<span style="font-style: italic">Propagation in the <a target="_blank" href="http://s3db.org/coremodel">S3DB core model</a></span><BR>
+			<canvas id = 'permit' width="300" height="500" rowspan="2"></canvas>
+		</div>
+		<div style="position: absolute; top: 150px; left:1000px; color: blue" id="permissions_explained">
+		</div>
+
+ 
+  
+ </body>
+</html>
