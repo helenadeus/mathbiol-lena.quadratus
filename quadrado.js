@@ -68,12 +68,18 @@ function clickS3DB(E, I, user_id) {
 	//start by explaining why user has permission that he has on clicked resource
 	explainPermission(E, I);
 
+	//remove all forward children left from the previous uid; this includes removing children of children
+	intface.removeChildren(E);
+	
+	//Dsiplay loading inside the square of the children
+	intface.loadingChildren(E);
+	
 	//now proceed to finding the s3db entities that inherit from this one. Start by filling it upu with what U1 sees, then limit permissions
 	
 	if(s3db.user_id != s3db.activeU.ind){
 	//s3db.user_id queyr has to be performed first and those children used on the intface
-	UID.compareChildren(uid, s3db.activeU.ind, "intface.children");
-	//UID.children(uid, s3db.activeU.ind, "intface.reloadChildren");
+	UID.compareChildren(uid, s3db.activeU.ind);
+	
 	}
 	else {
 	UID.children(uid, s3db.user_id, "intface.children");	
@@ -81,83 +87,6 @@ function clickS3DB(E, I, user_id) {
 	
 	//entertain the users - this must point to the children
 	//loading(s3db.core.boxes[E], s3db.core.ids[E]+"_loading");
-}
-
-function clickS3DB1(s3db_entity, s3db_clicked_id,clean) {
-
-	//Clean is a variable that determines whether the query needs to be performed again (clean=true) or not (clean=false)
-	if(typeof(clean)=='undefined'){
-		var clean = false;
-	}
-	var s3_id = s3db.core.ids[s3db_entity];
-
-	//Because explainPermission splices core.prev, recover it every time
-	s3db.core.prev = {P:["U"], R:["P", "C", "I", "C"],C:["P"],I:["C"],S:["R", "I", "I"]};
-	s3db.core.prev_id = {P:["user_id"], R:["project_id", "subject_id", "verb_id", "object_id"],C:["project_id"],I:["collection_id"],S:["rule_id","item_id","value"]};
-
-
-	//if(typeof(s3db_clicked_id)=='undefined'){ alert("Please select a project first");return false;}
-	s3db["active"+s3db_entity]=[];
-	s3db["active"+s3db_entity].ind = document.getElementById(s3db_entity+s3db_clicked_id).getAttribute("active_ind")*1;
-	s3db["active"+s3db_entity][s3_id] = s3db_clicked_id;
-			
-
-	//start by explaining why user has permission that he has on clicked resource
-	explainPermission(s3db_entity, s3db_clicked_id);
-
-
-	//now proceed to finding the s3db entities that inherit from this one
-	if(typeof(s3db.activeU)!='undefined'){
-		var user_key = s3db.U[s3db.activeU.ind].key;
-	}
-	else {
-		var user_key = s3db.key;
-	}
-	//params would look something like {project_id: 123};
-	var params = {};
-	params[s3_id] = s3db["active"+s3db_entity][s3_id];
-
-	//remove 'selected' color from all others
-	var facename = memory_varname(s3db_entity).replace(".U[s3db.activeU.ind]","");
-	var alldata = eval(facename+"."+s3db_entity);
-	for (var i=0, il=alldata.length; i<il; i++) {
-		var box = document.getElementById(s3db_entity+alldata[i][s3_id]);
-		if(alldata[i][s3_id]!=s3db_clicked_id){
-		
-		if(box){
-			box.style['font-weight'] ='normal'; 
-		}
-		}
-		else {
-			box.style['font-weight'] ='bold'; 
-		}
-	}
-
-		if(typeof(s3db.core.inherits[s3db_entity])!='undefined'){
-			for (var i=0; i<s3db.core.inherits[s3db_entity].length; i++) {
-				findS3DB(user_key, s3db.core.inherits[s3db_entity][i], params);
-				
-			}
-		}
-		
-		//when box is collection, trim the rules as well
-		if(s3db_entity=='C'){
-			//have rules been loaded yet?
-			if(typeof(s3db.P[s3db.activeP.ind].R)=='undefined'){
-				alert("Please wait for the Rules to be completelly loaded before clicking on Collections!!");
-			}
-			else {
-				
-			
-			var params1 = {};
-			params1['subject_id'] = s3db["active"+s3db_entity][s3_id];
-			var params2 = {};
-			params2['object_id'] = s3db["active"+s3db_entity][s3_id];
-
-			trimS3DB("R", params1, params2); //more than 1 params var means a union rather than an intersection
-			}
-		}
-
 }
 
 function trimS3DB(s3db_entity, params1, params2){
@@ -301,7 +230,6 @@ function findS3DB(user_key, s3db_entity, params) {
 			}
 			else {
 			//display the whole dataset, then compare
-			
 			compareS3DB(data, s3db_entity);	
 			}
 		}
@@ -466,6 +394,11 @@ function compareS3DB(newData, s3db_entity) {
 								}
 								
 
+						}
+						
+						//Testing right click; only if this span belongs to a user that is not the same as s3db.user_id
+						if(s3db.activeU.user_id!=s3db.user_id){
+							rightClickSpan(span.id, opt.id);
 						}
 					}
 
@@ -644,8 +577,15 @@ function clickUser() {
 		s3dbcall(url2call, 'saveUserKey(ans)');
 	}
 	else {
+		if(s3db.activeU.user_id != s3db.user_id){
+			UID.projects(s3db.activeU.user_id, "intface.compareEntity('"+s3db.activeU.user_id+"', 'P')");
+		}
+		else {
+			UID.projects(s3db.user_id, "intface.displayEntity('"+s3db.user_id+"', 'P')");	
+		}
+		
 		//collections and rules that current user has in current project_id; 
-		findS3DB(s3db.U[s3db.activeU.ind].key, "P");
+		//findS3DB(s3db.U[s3db.activeU.ind].key, "P");
 		
 		
 	}
@@ -653,43 +593,6 @@ function clickUser() {
 
 	return false;
 }
-
-function clickUserOLD() {
-	//user permissions will be compared against those of opened projects
-	//create a key for this user - who is the active user?
-	if(document.getElementById('user_id').value){
-	s3db.activeU=[];
-	s3db.activeU.user_id= document.getElementById('user_id').value;
-	
-	if(document.getElementById('user_id').childNodes.length>0)
-		//save the active project in the s3db structure	
-		for (var i=0; i<document.getElementById('user_id').childNodes.length; i++) {
-			if(document.getElementById('user_id').childNodes[i].selected){
-			//s3db.activeU.ind = i;
-			s3db.activeU.ind = s3db.activeU.user_id;
-			break;
-			}	
-		}	
-	
-	}
-	document.getElementById('user_selected').innerHTML = 'Active User: '+ s3db.U[s3db.activeU.ind].username+" (U"+s3db.activeU.user_id+")";
-	//key will be used to login as that user; this will only be usefull to chekc permission on resources that user can already see
-	if(typeof(s3db.U[s3db.activeU.ind].key)=='undefined'){
-		var url2call = s3db.url+"S3QL.php?key="+s3db.key+"&query=<S3QL><insert>key</insert><where><user_id>"+s3db.activeU.user_id+"</user_id></where></S3QL>";	
-		s3db.U[s3db.activeU.ind].key_call = url2call;
-		s3dbcall(url2call, 'saveUserKey(ans)');
-	}
-	else {
-		//collections and rules that current user has in current project_id; 
-		findS3DB(s3db.U[s3db.activeU.ind].key, "P");
-		
-		
-	}
-	
-
-	return false;
-}
-
 
 //save routines: these are callbacks that are not necessarily displayed
 
@@ -760,53 +663,11 @@ function displayUsers(ans) {
 	use.appendChild(opt);
 	
 	document.getElementById(hold).appendChild(use);
-	findS3DB(s3db.key, "P");
+	//findS3DB(s3db.key, "P");
+	UID.projects(s3db.user_id, "intface.displayEntity");
 	return false;
 }	
 
-function displayUsers1(ans) {
-	var hold = 'users';
-	//clean previous data
-	document.getElementById(hold).innerHTML = "";
-
-	use = document.createElement('select');
-	use.id = 'user_id';
-	//use.setAttribute('onClick', 'findUserKey()');
-	use.setAttribute('onClick', 'clickUser()');
-	use.disabled = false;
-	use.size=3;
-	s3db.U=ans;
-	
-	//make the logged user the current user
-	s3db.default_ind =  ans.length;
-	s3db.activeU = [];
-	//s3db.activeU.ind = ans.length;
-	s3db.activeU.ind = s3db.user_id;
-	s3db.activeU.user_id = s3db.user_id;
-	s3db.U[s3db.activeU.ind] = s3db.user_info[0];
-	s3db.U[s3db.activeU.ind].key=s3db.key;
-	document.getElementById('user_selected').innerHTML = 'Active User: '+ s3db.U[s3db.activeU.ind].username+" (U"+s3db.activeU.user_id+")";
-	if(ans){
-		for (var i in ans) {
-								
-			var opt = document.createElement('option')
-			opt.value = ans[i].user_id;
-			opt.innerHTML = ans[i].username+' (U'+ans[i].user_id+')';
-			use.appendChild(opt);
-			}
-
-		}
-			//add one entry for this user
-		//	var opt = document.createElement('option')
-		//	opt.value = s3db.user_id;
-		//	opt.innerHTML = s3db.user_info[0].username+' (U'+s3db.user_id+')';
-		//	opt.selected = true;
-		//	use.appendChild(opt);	
-
-	document.getElementById(hold).appendChild(use);
-	findS3DB(s3db.key, "P");
-	return false;
-}
 
 function saveUserPermissions(ans){
    if(ans){
@@ -816,10 +677,14 @@ function saveUserPermissions(ans){
 
 function saveUserKey(ans) {
 	if(ans[0].key_id){
-	s3db.U[s3db.activeU.ind].key = ans[0].key_id;
-	
-	findS3DB(ans[0].key_id, "P");
-	
+		s3db.U[s3db.activeU.ind].key = ans[0].key_id;
+		
+		if(s3db.user_id != s3db.activeU.user_id){
+			UID.projects(s3db.activeU.user_id, "intface.compareEntity('"+s3db.activeU.user_id+"', 'P')");
+		}
+		else {
+			UID.projects(s3db.user_id, "intface.displayEntity('"+s3db.user_id+"', 'P')");	
+		}
 	}
 }
 
@@ -1003,8 +868,10 @@ function display_box(ans,S3DB_Entity) {
 					color_permission_square(span, qi);
 					opt.appendChild(span);
 					
-					//Testing right click
-					rightClickSpan(span.id, opt.id);
+					//Testing right click; only if this span belongs to a user that is not the same as s3db.user_id
+					if(s3db.activeU.user_id!=s3db.user_id){
+						rightClickSpan(span.id, opt.id);
+					}
 				}
 				
 				
@@ -1075,3 +942,14 @@ function remove_element(id) {
 	}
 	return false;
 }
+
+function copy_parms(source,parms,target) { // copy parameters between two fields/methods
+	   if (!parms){parms= fields(source)}
+	   if (!target){target=new Array}
+	   for (var i=0;i<parms.length;i+=1){target[parms[i]]=source[parms[i]]}
+	   if (copy_parms.next){eval(copy_parms.next)}
+	   
+	   return target;
+		
+	   function fields(ob) { var fields = [];for (var i in ob) {fields.push(i);} return fields;}
+   }

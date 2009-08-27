@@ -223,13 +223,14 @@ function permissionUpdated(span_id, new_value, uid) {
 		var current_permission = s3db.U[s3db.activeU.ind][uid].assigned_permission;
 		}
 		else {
-			var current_permission = 'nnn';
+			var current_permission = '---';
 		}
 		//Replace, in current permission, the value that was changed
 		if(typeof(current_permission)!='undefined'){
 			 var E = uid.substr(0,1);
 			 var I = uid.substr(1,uid.length-1);
-			 [uid,type,pos] = span_id.split('_');
+			 var tmp = span_id.split('_');
+			 var uid = tmp[0]; var type = tmp[1]; var pos = tmp[2];
 			 var new_permission = '';
 			 for (var i=0; i<current_permission.length; i++) {
 				   if(i==pos){
@@ -245,20 +246,27 @@ function permissionUpdated(span_id, new_value, uid) {
 			 
 			 //callit, then user permissions need to be recalculated
 			 //console.log(url2call);
-			 s3dbcall(url2call, 'permissionReIssue("'+uid+'", "'+s3db.activeU.ind+'", "'+new_permission+'")');
+			 s3dbcall(url2call, 'permissionReIssue(ans, "'+uid+'", "'+s3db.activeU.ind+'", "'+new_permission+'")');
 				
 
 		}
 	}
+	else {
+		alert("Increasing your own permission from a resource is not allowed! Decreasing your permissions in a resource is not recoverable (Admin will need to recover it)");
+	}
 }
 
-function permissionReIssue(uid,user_was_changed,new_permission) {
+function permissionReIssue(ans, uid,user_was_changed,new_permission) {
  //the permission for this uid has just changed, so re-issue it on the interface
  //if permission is the same, do nothing
+	if(ans[0].error_code=='0'){
+		s3db.U[user_was_changed][uid] =  new_permission;
+	}
+
 	if(typeof(s3db.U[user_was_changed][uid])=='undefined') 
 	{ 
-		s3db.U[user_was_changed][uid] = {assigned_permission : '---', effective_permission : 'nnn' } 
-		console.log("User "+user_was_changed+" cannot query uid "+uid+". For that reason, permission is assumed nnn.");
+		s3db.U[user_was_changed][uid] = {assigned_permission : '---', effective_permission : '---' } 
+		console.log("User "+user_was_changed+" cannot query uid "+uid+". For that reason, permission is assumed ---.");
 	};
 	
 	if(new_permission!=s3db.U[user_was_changed][uid].assigned_permission){
