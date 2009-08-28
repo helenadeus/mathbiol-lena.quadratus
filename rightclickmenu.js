@@ -48,13 +48,13 @@ function createMenu(id, S3DB_UID) {
 	for (var i=0; i<7; i++) {
 		if(i==0){
 			var li = document.createElement('li');
-			li.class = "title";
+			li.setAttribute("class","title");
 			li.innerHTML = 'Local';
 			ul.appendChild(li);
 		}
 		else if (i==4) {
 			var li = document.createElement('li');
-			li.class = "title";
+			li.setAttribute("class","title")
 			li.innerHTML = 'Global';
 			ul.appendChild(li);
 		}
