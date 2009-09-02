@@ -5,6 +5,7 @@
  <!-- <script type='text/javascript' 
         src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script> -->
  <link rel="stylesheet" href="rightclickmenu.css" type="text/css"/> 
+ <!-- <script type="text/javascript" src="firebug-lite.js"></script> -->
  <script type="text/javascript" src="s3dbcall.js"></script> 
  <script type="text/javascript" src="rightclickmenu.js"></script>
  <script type="text/javascript" src="canvas.js"></script>
@@ -44,10 +45,9 @@
  </style>
  </head>
 
-<body onload="putTheImageInTheMiddle();">
+<body onload="putTheImageInTheMiddle(); document.getElementById('key').value='mudamseostempos'; document.getElementById('go').style.display='inline';document.getElementById('go').click()">
 
-
-  <!--  <body onload="putTheImageInTheMiddle()"> -->
+<!-- <body onload="putTheImageInTheMiddle()"> -->
 
 	  
 			<img src="gradient_square90.png" id="blue_grad" style="position: absolute;top: 0px; left: 0px; height: 300px"/>

@@ -1,5 +1,5 @@
 //quadrado.js is an exercise in ubilding an interface that displays only the permission that the user that has been chosen has on the project that has been selected
-var ClickColor = "#000000"
+var ClickColor = "#000000";
 var MovColor = "#33FF66";
 var MoffColor = "blue";
 
@@ -27,7 +27,7 @@ function trigger_s3db() {
 			uid_total_threadsShort :  {'P':1,'C':1,'R':3,'I':1,'S':4}
 	};
 	
-	if(s3db.key=='' || s3db.key=='type your key'){
+	if(s3db.key==='' || s3db.key==='type your key'){
 	
 	//call apilogin first
 	//authority
@@ -710,9 +710,10 @@ function putTheImageInTheMiddle() {
    hei = window.innerHeight;
    
 	document.getElementById('blue_grad').width=win;
-	document.getElementById('square').width=win/1.5;
+	//document.getElementById('square').width=win/1.5;
+	document.getElementById('square').setAttribute("width",win/1.5);
 	document.getElementById('square').height=hei;
-    document.getElementById('collections').height = (hei/2)-10;
+    document.getElementById('collections').setAttribute("height",(hei/2)-10);
 	document.getElementById('rules').height = (hei/2)-10;
 
 }
