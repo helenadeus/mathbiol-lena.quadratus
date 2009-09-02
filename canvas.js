@@ -23,7 +23,7 @@ function canvas_add_text(ctx, params,effective_permissions,assigned_permissions)
 			colors[i] = '#CCFFFF';
 			//find permissions
 			if(typeof(effective_permissions[i])=='undefined'){
-				effective_permissions[i] = 'nnn';
+				effective_permissions[i] = '---';
 			}
 			if(typeof(assigned_permissions[i])=='undefined'){
 				assigned_permissions[i] = '---';
