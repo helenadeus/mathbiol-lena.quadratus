@@ -259,6 +259,8 @@ var intface = {
 				 tmp.effective_permission =  '---';
 				 tmp.assigned_permission =  '---';
 				// console.log('no information for user '+user_id+' on '+c_uid+'. Assuming default nnn');
+				//Since no info was discovered, we need to call the element from U1 and fill the element once this is done
+				Permission.uidQueryInaccessible(c_uid, user_id);
 			 }
 			 newdata[c_uid] = tmp;
 			 s3db.U[user_id][c_uid] = tmp;
@@ -292,6 +294,7 @@ var intface = {
 				 tmp.effective_permission =  '---';
 				 tmp.assigned_permission =  '---';
 				// console.log('no information for user '+user_id+' on '+c_uid+'. Assuming default nnn');
+				Permission.uidQueryInaccessible(c_uid, user_id);
 			 }
 			 //newdata[c_uid] = tmp;
 			 s3db.U[user_id][c_uid] = tmp;
@@ -341,5 +344,58 @@ var intface = {
 				}
 			}
 	},
+	
+	displayInaccessible : function(ans, uid, user_id){
+		s3db.tmp = ans;
+		//console.log('got in');		
+		if(ans && typeof(s3db.U[user_id][uid])!='undefined'){
+			s3db.U[user_id][uid].assigned_permission =  ans[0].assigned_permissionOnEntity;
+			s3db.U[user_id][uid].effective_permission =  ans[0].effective_permissionOnEntity;
+			
+			//finally it can be visualized
+			//C1217820_assigned_0
+			
+			//Alter assigned
+			var l =  s3db.U[user_id][uid].assigned_permission.length;
+			for (var i=0; i<l; i++) {
+				var span = document.getElementById(uid+"_assigned_"+i);
+				if(span){
+					intface.color_permission_square(span, s3db.U[user_id][uid].assigned_permission[i]);
+				
+				}
+			}
+
+			//Alter effective
+			var l =  s3db.U[user_id][uid].effective_permission.length;
+			for (var i=0; i<l; i++) {
+				var span = document.getElementById(uid+"_perm_"+i);
+				if(span){
+					intface.color_permission_square(span, s3db.U[user_id][uid].effective_permission[i]);
+				
+				}
+			}
+			
+		}
+	},
+
+	color_permission_square : function(span, pi) {
+		 if(pi=='y' || pi=='Y'){
+		span.setAttribute("style", "background-color: green");
+		
+		}
+		else if(pi=='s' || pi=='S'){
+		span.setAttribute("style", "background-color: yellow");
+		}
+		else if(pi=='n' || pi=='N'){
+		span.setAttribute("style", "background-color: red");
+		}
+		else if(pi=='-'){
+		span.setAttribute("style", "background-color: silver");
+		}
+		span.setAttribute("class", "permission_spans");
+
+		span.innerHTML = "&nbsp;"+pi+"&nbsp;";	
+		return span;
+	}
 	
 }

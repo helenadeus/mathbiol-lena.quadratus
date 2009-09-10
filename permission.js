@@ -135,6 +135,7 @@ var Permission = {
 				}
 				else {
 				s3db.permission[uid][p_uid] = {effective_permission : '---', assigned_permission : '---'};	
+				
 				}
 		}
 		else {
@@ -186,7 +187,14 @@ var Permission = {
 				}
 			return uid_type;
 			
-	}
+	},
+		uidQueryInaccessible : function (uid, user_id) {
+			var E = uid.substr(0,1);
+			var I = uid.substr(1,uid.length-1);
+			var id_name = s3db.core.ids[E];
+			url2call = s3db.url+"S3QL.php?key="+s3db.key+"&query=<S3QL><from>users</from><where><"+id_name+">"+I+"</"+id_name+"><user_id>"+user_id+"</user_id></where></S3QL>";
+			s3dbcall(url2call, "intface.displayInaccessible(ans, '"+uid+"', '"+user_id+"')");
+		}
 }
 
 

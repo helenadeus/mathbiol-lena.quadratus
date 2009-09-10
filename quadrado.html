@@ -45,9 +45,9 @@
  </style>
  </head>
 
-<body onload="putTheImageInTheMiddle(); document.getElementById('key').value='mudamseostempos'; document.getElementById('go').style.display='inline';document.getElementById('go').click()">
+<!-- <body onload="putTheImageInTheMiddle(); document.getElementById('key').value='serounaoser'; document.getElementById('go').style.display='inline';document.getElementById('go').click()"> -->
 
-<!-- <body onload="putTheImageInTheMiddle()"> -->
+<body onload="putTheImageInTheMiddle()">
 
 	  
 			<img src="gradient_square90.png" id="blue_grad" style="position: absolute;top: 0px; left: 0px; height: 300px"/>
@@ -55,7 +55,7 @@
 			<div class="shifted" style="top: 60px; color: white; font-size: 14px">Quadratus is a tool that will let you change permissions on S3DB resources and see how they propagate to other users.</div>
 			<div id="login">
 				<table id="login_options" class="shifted" style="top: 120px; font-size: 14px; color: blue;">
-				<tr><td>Choose an S3DB deployment</td><td colspan="2"></td></tr>
+				<tr><td>Choose an S3DB deployment</td><td colspan="2" id="message"></td></tr>
 				
 				<tr><td>
 				<select id="url" onChange="display_other()" onClick="display_other()">

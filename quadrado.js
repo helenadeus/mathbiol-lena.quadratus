@@ -40,14 +40,26 @@ function trigger_s3db() {
 	s3dbcall(url2call, 'findKey(ans)');
 	}
 	else {
-		hide('login');display('login_text');display('square');drawCore();
-		
-		findUserId();
+		//start by checking if the key is valid
+		var url2call = s3db.url+'keyCheck.php?key='+s3db.key;
+		s3dbcall(url2call, 'checkKeyValid(ans)');
 		
 		
 		
 	}
 	return false;
+}
+
+function checkKeyValid(ans) {
+	if(ans[0].error_code=='0'){
+		hide('login');display('login_text');display('square');drawCore();
+		findUserId();
+	}
+	else {
+		document.getElementById("message").innerHTML = "Key is not valid";
+		document.getElementById("message").style.color = "red";
+
+	}
 }
 
 function clickS3DB(E, I, user_id) {
@@ -518,6 +530,7 @@ function explainPermission(s3db_entity, s3db_clicked_id) {
 }
 
 function findUserId() {
+	
 	var url2call = s3db.url+"URI.php?key="+s3db.key;
 	s3db.user_call = url2call;
 	s3dbcall(url2call, 'saveUserInfo(ans)');
@@ -525,7 +538,7 @@ function findUserId() {
 	return false;
 }
 function findKey(ans) {
-	if (ans[0].key_id!='' && typeof(ans[0].key_id)!='undefined') {
+	if (typeof(ans[0].key_id)!='undefined' && ans[0].key_id!='') {
 		s3db.key = ans[0].key_id;
 		//document.getElementById('key').value = s3db.key;
 		hide('login');display('login_text');display('legend');display('square');
