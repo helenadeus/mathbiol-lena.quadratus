@@ -282,10 +282,12 @@ var intface = {
 		//This will be the complete data; permissions will be added from the user being queried
 		var completedata = s3db[uid][childType];
 		//This will be the data that teh selected user can see
-		var userdata = s3db.U[user_id][uid][childType];
+		//var userdata = s3db.U[user_id][uid][childType];
+		var userdata = copy_parms(s3db.U[user_id][uid][childType]);
+		delete s3db.U[user_id][uid][childType]; s3db.U[user_id][uid][childType] = {} //reborn
 		var newdata = {};
 		for (var c_uid in completedata) {
-			 var tmp = completedata[c_uid];
+			 var tmp = copy_parms(completedata[c_uid]);
 			 if(typeof(userdata[c_uid])!='undefined'){
 				 tmp.effective_permission =  userdata[c_uid].effective_permission;
 				 tmp.assigned_permission =  userdata[c_uid].assigned_permission;

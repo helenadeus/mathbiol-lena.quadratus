@@ -5,16 +5,18 @@ var UID = {
 
 	call : function (uid, user_id, next_action) {
 		//only execute a call when uid does not yet exist
+		
 		if(typeof(user_id)=='undefined'){ var user_id = s3db.activeU.user_id; }
 		if(typeof(s3db.U[user_id][uid])=='undefined'){
 			var E = uid.substr(0,1);
 			var I = uid.substr(1,uid.length-1);
-
+		  
 			url2call = s3db.url+"S3QL.php?key="+s3db.U[user_id].key+"&query=<S3QL><from>"+s3db.core.entities[E]+"</from><where><"+s3db.core.ids[E]+">"+I+"</"+s3db.core.ids[E]+"></where></S3QL>";
-			s3dbcall(url2call, 'UID.found(ans, "'+uid+'", "'+user_id+'","'+next_action+'")');
+			s3dbcall(url2call, "UID.found(ans, '"+uid+"', '"+user_id+"','"+next_action+"')");
 		}
 		else {
-			eval (next_action);
+			UID.found([s3db.U[user_id][uid]], uid, user_id, next_action);
+			//eval(next_action);
 		}
 	},
 	
@@ -24,12 +26,13 @@ var UID = {
 		if(typeof(ans)!='undefined' && typeof(ans[0].error_code)=='undefined'){
 		s3db.U[user_id][uid] = ans[0];
 		}
-		else if (typeof(s3db[uid])!='undefined') {
-		s3db.U[user_id][uid] = s3db[uid];
+		else if (typeof(s3db[uid])!='undefined' && typeof(s3db.U[user_id][uid])=='undefined') {
+		s3db.U[user_id][uid] = copy_parms(s3db[uid]);
 		delete s3db.U[user_id][uid].assigned_permission;
 		delete s3db.U[user_id][uid].effective_permission;
 
 		}
+		console.log(next_action);
 		eval(next_action);
 	},
 

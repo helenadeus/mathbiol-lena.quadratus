@@ -458,7 +458,22 @@ function explainPermission(s3db_entity, s3db_clicked_id) {
 	if(typeof(s3db.U[s3db.activeU.ind].pl[s3db_entity+s3db_clicked_id])=='undefined'){
 	
 		var uid=s3db_entity+s3db_clicked_id;
-		uid_call(uid, "Permission.parents('"+uid+"')");
+		next_action = "Permission.parents('"+uid+"')";
+		//next_action = 'Permission.parents("'+uid+'")';
+		UID.call(uid,s3db.activeU.ind, next_action); 
+		//next_action = 'Permission.parents("'+uid+'")';
+		//uid_call(uid, s3db.activeU.ind, next_action);
+		//if(typeof (s3db.U[s3db.activeU.ind][uid])=='undefined'){
+		//uid_call(uid, next_action);
+		//}
+		//else {
+		//	if(s3db.activeU.ind!=s3db.user_id){
+		//		s3db.U[s3db.activeU.ind][uid] = copy_parms(s3db[uid]);
+		//	}
+			
+		//Permission.parents(uid);	//Permission.parents should throws us right back at explainPermission once it is done
+		//}
+		//UID.call(uid, s3db.activeU.ind, "Permission.parents('"+uid+"')");
 	}
 	else {
 		
@@ -524,9 +539,9 @@ function explainPermission(s3db_entity, s3db_clicked_id) {
 				
 			}
 		}
-		
+		drawCore(params, effective, assigned);	
 	}
-	drawCore(params, effective, assigned);
+	
 }
 
 function findUserId() {

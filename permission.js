@@ -93,7 +93,7 @@ var Permission = {
 				}
 				s3db.parents_uid[uid].push(next_uid);
 				if(typeof(s3db[next_uid])=='undefined'){
-					uid_call(next_uid, "Permission.join_parent_thread(ans, '"+root+"', '"+next_uid+"')");
+					uid_call(next_uid, s3db.activeU.ind, "Permission.join_parent_thread(ans, '"+root+"', '"+next_uid+"')");
 				}
 				else {
 					Permission.join_parent_thread([s3db[next_uid]], root, next_uid);
@@ -139,8 +139,8 @@ var Permission = {
 				}
 		}
 		else {
-				if(s3db.activeU.user_id==s3db.user_id) { var dd = s3db[p_uid]; }
-				else { var dd = s3db.U[s3db.activeU.ind][p_uid];	}
+				if(s3db.activeU.user_id==s3db.user_id) { var dd = copy_parms(s3db[p_uid]); }
+				else { var dd = copy_parms(s3db.U[s3db.activeU.ind][p_uid]);	}
 				s3db.permission[uid][p_uid] = {effective_permission : dd.effective_permission, assigned_permission : dd.assigned_permission }; 
 		}
 		s3db.permission[uid][p_uid].uid_type = Permission.uidType(uid, p_uid);
@@ -211,12 +211,12 @@ function uid_found(ans, uid, next_action) {
 	eval(next_action);
 }
 
-function uid_call(uid, next_action) {
+function uid_call(uid, user_id, next_action) {
 
 	
 	var E = uid.substr(0,1);
 	var I = uid.substr(1,uid.length-1);
-
+	//alert(next_action);
 	url2call = s3db.url+"S3QL.php?key="+s3db.U[s3db.activeU.ind].key+"&query=<S3QL><from>"+s3db.core.entities[E]+"</from><where><"+s3db.core.ids[E]+">"+I+"</"+s3db.core.ids[E]+"></where></S3QL>";
 	s3dbcall(url2call, 'uid_found(ans, "'+uid+'", "'+next_action+'")');
 	
@@ -278,7 +278,8 @@ function permissionReIssue(ans, uid,user_was_changed,new_permission) {
 	};
 	
 	if(new_permission!=s3db.U[user_was_changed][uid].assigned_permission){
-		UID.reload(uid,user_was_changed, "intface.uidReload('"+uid+"', '"+user_was_changed+"')");
+		//UID.reload(uid,user_was_changed, "intface.uidReload('"+uid+"', '"+user_was_changed+"')");
+		UID.reload(uid,user_was_changed, 'intface.uidReload("'+uid+'", "'+user_was_changed+'")');
 		
 	}
 }
