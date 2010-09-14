@@ -2,50 +2,23 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
  <head>
   <title> O quadrado </title>
- <!-- <script type='text/javascript' 
-        src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script> -->
+ 
  <link rel="stylesheet" href="rightclickmenu.css" type="text/css"/> 
- <!-- <script type="text/javascript" src="firebug-lite.js"></script> -->
+ <!--[if IE]><script type="text/javascript" src="http://canvas-text.googlecode.com/svn/trunk/excanvas.js"></script>
+    <script type="text/javascript" src="http://canvas-text.googlecode.com/svn/trunk/canvas.text.js"></script>
+    <script type="text/javascript" src="http://canvas-text.googlecode.com/svn/trunk/faces/optimer-normal-normal.js"></script>
+	<![endif]-->
  <script type="text/javascript" src="s3dbcall.js"></script> 
+ <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.min.js"></script>
  <script type="text/javascript" src="rightclickmenu.js"></script>
  <script type="text/javascript" src="canvas.js"></script>
  <script type="text/javascript" src="permission.js"></script>
  <script type="text/javascript" src="s3db_uid.js"></script> 
  <script type="text/javascript" src="intface.js"></script>
  <script type="text/javascript" id="quadrado" src="quadrado.js"></script>
- <script src="http://explorercanvas.googlecode.com/svn/trunk/excanvas.js"></script>
- 
-
- <style type="text/css">
- .shifted {
-	  position: absolute;
-	  left: 40px; 
-	  font-family: Helvetica;
-	 
- }
-
- .pretty_cells {
-	border-width: 2px 2px 2px 2px;
-	padding: 1px 1px 1px 1px;
-	border-style: inset inset inset inset;
-	border-color: blue blue blue blue;
-	background-color: white;
-	height: 240px;
-	width: 350px;
-	
-	overflow: scroll;
-	-moz-border-radius: 8px 8px 8px 8px;
- }
-
- .permission_spans {
- border: 2px solid white; 
- font-size: small;
- font-family: Courier New;
- }
- </style>
  </head>
 
-<body onload="putTheImageInTheMiddle(); document.getElementById('key').value='forgimanager'; document.getElementById('go').style.display='inline';document.getElementById('go').click()">
+<body onload="document.getElementById('url').value='http://204.232.200.16/s3db2/';document.getElementById('key').value='Fa69isa2lyRUTub'; document.getElementById('go').style.display='inline';document.getElementById('go').click()">
 
 <!-- <body onload="putTheImageInTheMiddle()"> -->
 
@@ -59,10 +32,11 @@
 				
 				<tr><td>
 				<select id="url" onChange="display_other()" onClick="display_other()">
-					<option value="http://ibl.mdanderson.org/edu/" selected="selected">EDU deployment</option>
+					<option value="http://204.232.200.16/s3db2/">Staphylococcus Demo deployment</option>
+					<option value="http://ibl.mdanderson.org/edu/">EDU deployment</option>
 					<option value="http://ibl.mdanderson.org/TCGA/">TCGA deployment</option>
 					<option value="http://ibl.mdanderson.org/similarity/">Similarity metrics deployment</option>
-					<option value="http://ibl.mdanderson.org/s3dbdemo3/">Demo deployment</option>
+					<option value="http://ibl.mdanderson.org/s3dbdemo3/" selected="selected">Demo deployment</option>
 					<option value="http://ibl.mdanderson.org/dev/">Dev deployment</option>
 					<option value="other">Other...</option>
 				</select>
@@ -205,6 +179,9 @@
 		</div>
 
  
-  
+
+    
+
+
  </body>
 </html>

@@ -67,3 +67,28 @@
   visibility:hidden;
   margin-right:2px;
 }
+.shifted {
+	  position: absolute;
+	  left: 40px; 
+	  font-family: Helvetica;
+	 
+ }
+
+ .pretty_cells {
+	border-width: 2px 2px 2px 2px;
+	padding: 1px 1px 1px 1px;
+	border-style: inset inset inset inset;
+	border-color: blue blue blue blue;
+	background-color: white;
+	height: 240px;
+	width: 350px;
+	
+	overflow: scroll;
+	-moz-border-radius: 8px 8px 8px 8px;
+ }
+
+ .permission_spans {
+ border: 2px solid white; 
+ font-size: small;
+ font-family: Courier New;
+ }

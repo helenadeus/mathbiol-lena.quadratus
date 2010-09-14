@@ -62,7 +62,7 @@ s3dbcall=function (src,next_eval,else_eval,tout) {
 		if (url[url.length]!=='/') {url+='/'}
 		if (src.key) {var key=src.key;delete src.key} else {var key=s3dbcall.key} // get url
 		src=url+'S3QL.php?key='+key+'&query='+s3dbcall.json2xml(src,'S3QL');
-		console.log(src)
+		//console.log(src)
 		}
 	if (!src.match(/\?/)) {src+="?"+arg} else {src+='&'+arg}
 	var headID = document.getElementsByTagName('head')[0];

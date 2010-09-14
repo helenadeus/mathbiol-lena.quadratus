@@ -2,7 +2,7 @@ var UID = {
 //UID will contain all operations that can be performed in an s3db uid;
 	uid_children : {},
 	uid_call_children : {},
-
+	cache : {},
 	call : function (uid, user_id, next_action) {
 		//only execute a call when uid does not yet exist
 		
@@ -12,7 +12,11 @@ var UID = {
 			var I = uid.substr(1,uid.length-1);
 		  
 			url2call = s3db.url+"S3QL.php?key="+s3db.U[user_id].key+"&query=<S3QL><from>"+s3db.core.entities[E]+"</from><where><"+s3db.core.ids[E]+">"+I+"</"+s3db.core.ids[E]+"></where></S3QL>";
-			s3dbcall(url2call, "UID.found(ans, '"+uid+"', '"+user_id+"','"+next_action+"')");
+			UID.call.uid = uid;UID.call.user_id = user_id; UID.call.next_action = next_action;
+			$.getJSON(url2call+'&format=json&callback=?', function (ans) {
+				UID.found(ans, UID.call.uid, UID.call.user_id, UID.call.next_action);
+			})
+			//s3dbcall(url2call, "UID.found(ans, '"+uid+"', '"+user_id+"','"+next_action+"')");
 		}
 		else {
 			UID.found([s3db.U[user_id][uid]], uid, user_id, next_action);
@@ -32,7 +36,7 @@ var UID = {
 		delete s3db.U[user_id][uid].effective_permission;
 
 		}
-		console.log(next_action);
+		//console.log(next_action);
 		eval(next_action);
 	},
 
@@ -52,7 +56,9 @@ var UID = {
 		
 		if(typeof(UID.completed)=='undefined'){
 			UID.completed = 0;
-			UID.children(uid, s3db.user_id, "UID.compareChildren('"+uid+"', '"+s3db.activeU.user_id+"', '"+UID.completed+"')");//come back to this func afterwards
+			UID.compareChildren.uid = uid;
+			
+			UID.children(uid, s3db.user_id, 'UID.compareChildren(UID.compareChildren.uid, s3db.activeU.user_id, UID.completed)');//come back to this func afterwards
 		}
 		else {
 			UID.completed++;
@@ -83,7 +89,7 @@ var UID = {
 			var E = uid.substr(0,1);
 			var I = uid.substr(1,uid.length-1);
 			var childEntities = s3db.core.inherits[E];
-			
+			UID.children.thread = 0;
 			//don't try to do this for statements
 			if(typeof (childEntities)!='undefined')
 			{
@@ -101,25 +107,46 @@ var UID = {
 							var inheritedIDName = 'subject_id';
 							var url2call = s3db.url+"S3QL.php?key="+s3db.U[user_id].key+"&query=<S3QL><from>"+childName+"</from><where><"+inheritedIDName+">"+I+"</"+inheritedIDName+"></where></S3QL>";
 							UID.uid_call_children = url2call;
-							s3dbcall(url2call, 'UID.childrenFound(ans, "'+childEntities[i]+'", "'+uid+'", "'+user_id+'","'+next_action+'")');
+							UID.children.childEntity = childEntities[i];UID.children.uid = uid;UID.children.user_id = user_id;UID.children.next_action = next_action;
+							//s3dbcall(url2call, 'UID.childrenFound(ans, "'+childEntities[i]+'", "'+uid+'", "'+user_id+'","'+next_action+'")');
+							$.getJSON(url2call+'&format=json&callback=?', function (ans) {
+								UID.childrenFound(ans, UID.children.childEntity, UID.children.uid, UID.children.user_id, UID.children.next_action);
+							});
+
 							
 							var inheritedIDName = 'object_id';
 							var url2call = s3db.url+"S3QL.php?key="+s3db.U[user_id].key+"&query=<S3QL><from>"+childName+"</from><where><"+inheritedIDName+">"+I+"</"+inheritedIDName+"></where></S3QL>";
+							
 							UID.uid_call_children = url2call;
-							s3dbcall(url2call, 'UID.childrenFound(ans, "'+childEntities[i]+'", "'+uid+'", "'+user_id+'","'+next_action+'")');
+							UID.children.childEntities = childEntities;UID.children.uid = uid;
+							UID.children.user_id = user_id; UID.children.next_action = next_action;
+							$.getJSON(url2call+'&format=json&callback=?', function (ans) {
+								variableI = UID.children.thread;
+								UID.childrenFound(ans, UID.children.childEntities[variableI],UID.children.uid, UID.children.user_id,UID.children.next_action);
+								UID.children.thread++;
+							});
+							//s3dbcall(url2call, 'UID.childrenFound(ans, "'+childEntities[i]+'", "'+uid+'", "'+user_id+'","'+next_action+'")');
 						}
 						else {
 							url2call = s3db.url+"S3QL.php?key="+s3db.U[user_id].key+"&query=<S3QL><from>"+childName+"</from><where><"+inheritedIDName+">"+I+"</"+inheritedIDName+"></where></S3QL>";
 							UID.uid_call_children = url2call;
-							s3dbcall(url2call, 'UID.childrenFound(ans, "'+childEntities[i]+'", "'+uid+'", "'+user_id+'","'+next_action+'")');
+							UID.children.childEntities = childEntities;UID.children.uid = uid;
+							UID.children.user_id = user_id; UID.children.next_action = next_action;
+							$.getJSON(url2call+'&format=json&callback=?', function (ans) {
+								variableI = UID.children.thread;
+								UID.childrenFound(ans, UID.children.childEntities[variableI],UID.children.uid, UID.children.user_id,UID.children.next_action);
+								UID.children.thread++;
+							});
+							//s3dbcall(url2call, 'UID.childrenFound(ans, "'+childEntities[i]+'", "'+uid+'", "'+user_id+'","'+next_action+'")');
 						}															
 						
 						
 					}
 					else {
-						if(next_action!='undefined'){
+						if(typeof(next_action)!=='undefined'){
 							if(next_action.match(/\(.*\)/)){
 								eval(next_action);
+								next_action
 							}
 							else {
 								eval(next_action+"('"+uid+"', "+user_id+", '"+childType+"')");
@@ -180,11 +207,17 @@ var UID = {
 
 	projects : function (user_id, next_action) {
 
+		//if projects are being requested, then this must mean the either the user is first looging in or the user has changed (proxy) in either case, all other boxes should go empty?
 		if(typeof(user_id)=='undefined'){ var user_id = s3db.activeU.ind; }
 		if(typeof(s3db.U[user_id].P)=='undefined'){
-			url2call = s3db.url+"S3QL.php?key="+s3db.U[user_id].key+"&query=<S3QL><from>projects</from></S3QL>";
+			url2call = s3db.url+"S3QL.php?format=json&key="+s3db.U[user_id].key+"&query=<S3QL><from>projects</from></S3QL>";
 			UID.uid_call_children = url2call;
-			s3dbcall(url2call, 'UID.projectsFound(ans, "'+user_id+'","'+next_action+'")');	
+			UID.projects.user_id = user_id;UID.projects.next_action = next_action;
+			$.getJSON(url2call+'&callback=?', function (ans) {
+				UID.projectsFound(ans, user_id,next_action);
+			});
+			//s3dbcall(url2call, 'UID.projectsFound(ans, "'+user_id+'","'+next_action+'")');	
+			//s3dbcall(url2call, "UID.projectsFound(ans, '"+user_id+"','"+next_action+"')");	
 		}
 		else {
 
@@ -209,7 +242,7 @@ var UID = {
 			for (var i=0, il=ans.length; i<il; i++) {
 				var p_uid =  "P"+ans[i][s3db.core.ids["P"]];
 				s3db.U[user_id][p_uid] = ans[i];
-				s3db.U[user_id]["P"][p_uid] = s3db.U[user_id][p_uid];
+				s3db.U[user_id]["P"][p_uid] = ans[i];
 				
 				
 				//for parent user, save also in the global s3db
@@ -222,7 +255,22 @@ var UID = {
 			}
 	   
 		}
+		//at this point, we can either use the projects to populate the interface (if original user) or, if the user that is active is not the original one, we can use the projects to compare agains what is already in the box
 		
+		//action 1 is compare with entities already there
+		if(s3db.activeU.user_id!==s3db.user_id){
+			intface.compareEntity(s3db.activeU.user_id, 'P');
+			if(typeof(s3db.activeP)!=='undefined')
+			clickS3DB('P', s3db.activeP.project_id, s3db.activeU.user_id);
+		}
+		else {
+			intface.displayEntity(s3db.activeU.user_id, 'P');
+		}
+		
+		//action 2 is a fill with entities that login user may not have had permission on
+		
+		
+		/*
 		if(next_action!='undefined'){
 			//does it bring argumnetos?
 			if(next_action.match(/\(.*\)/)){
@@ -233,6 +281,7 @@ var UID = {
 			}
 
 		}
+		*/
 	},
 
 	childrenReload : function (uid, user_id, next_action) {
@@ -240,6 +289,7 @@ var UID = {
 		
 		if(typeof(s3db.U[user_id][uid])=='undefined'){
 			s3db.U[user_id][uid] = {assigned_permission : '---', effective_permission : 'nnn' };
+			if(console.log)
 			console.log("User "+user_id+" cannot query uid "+uid+". For that reason, permission is assumed nnn.");
 		}
 		var E = uid.substr(0,1);

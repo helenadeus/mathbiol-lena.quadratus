@@ -42,7 +42,7 @@ var intface = {
 						else {
 							var eff = 'nnn';
 							var assi = '---';
-							console.log("User cannot query uid "+j+". Exact permission could not be retrieved");
+							if(console.log) console.log("User cannot query uid "+j+". Exact permission could not be retrieved");
 						}
 						
 						for (var k=0; k<eff.length; k++) {
@@ -81,7 +81,7 @@ var intface = {
 		var data = s3db.U[user_id][uid][childType];
 
 		//Clean previous data first
-		document.getElementById(box ).innerHTML = "";
+		document.getElementById(box).innerHTML = "";
 		
 		//Starting building a div for every uid; 2 span triple boxes for permissions
 		if(data){
@@ -243,15 +243,20 @@ var intface = {
 		var S3DB_ID = s3db.core.ids[E];
 		var completedata = s3db[childType];
 	    var userdata = s3db.U[user_id][childType];
-		
+		var childEntities = s3db.core.inherits[E];
 		//The goal is to keep the same order in userdata as in complete data; new data will be a complete replacement of userdata 
 		var newdata = {};
 		delete s3db.U[user_id][childType];
 		s3db.U[user_id][childType] = {};
+		
 		for (var c_uid in completedata) {
 		     //need to create a clone instead of a link; so slice seems to be the only thing that works
 			 var tmp = copy_parms(completedata[c_uid]);
-			 if(typeof(userdata[c_uid])!='undefined'){
+			//CARE must be taken to avoid copying children (because of the trigger that only fetches the children if they are not already in the variable)
+			for (var i=0; i<childEntities.length; i++) {
+				delete tmp[childEntities[i]];
+			 }
+			 if(typeof(userdata[c_uid])!=='undefined'){
 				 tmp.effective_permission =  userdata[c_uid].effective_permission;
 				 tmp.assigned_permission =  userdata[c_uid].assigned_permission;
 			 }
@@ -269,6 +274,9 @@ var intface = {
 		}
 		
 		intface.displayEntity(user_id, childType);
+
+		//at this point, find the children also of the entity being compared and again compare the entity
+
 	},
 
 	compareChildren : function (uid, user_id, childType) {

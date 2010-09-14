@@ -1,7 +1,7 @@
 
 function canvas_add_text(ctx, params,effective_permissions,assigned_permissions) {
 					   //0	 1	2		  3   4		  5		   6			7   8		  9
-	 params_default = ["					U", "					P",'C verb','R','Csubj','I verb','  C obj /  L','S','I subj','  I  obj /  L'];
+	 params_default = ["U", "P",'C verb','R','Csubj','I verb','  C obj /  L','S','I subj','  I  obj /  L'];
 	 if(typeof(params)=='undefined'){
 	 params = {};
 	 }
@@ -44,11 +44,13 @@ function canvas_add_text(ctx, params,effective_permissions,assigned_permissions)
 		
 		
 		ctx.fillStyle = 'blue';
-		if(i!=3 && i!=7){
-			ctx.fillText(params[i], sq[i].x+insideX, sq[i].y+insideY);
-		}
-		else {
-			ctx.fillText(params[i], sq[i].x+insideX, sq[i].y+insideY-3);
+		if(ctx.fillText) {
+			if(i!=3 && i!=7){
+				ctx.fillText(params[i], sq[i].x+insideX, sq[i].y+insideY);
+			}
+			else {
+				ctx.fillText(params[i], sq[i].x+insideX, sq[i].y+insideY-3);
+			}
 		}
 		//write effetive permissions above the square
 		if(typeof(effective_permissions[i])!='undefined'){
@@ -89,6 +91,7 @@ function permissionSquares(ctx,positionX,positionY,perm) {
 		ctx.strokeRect(X[i], Y[i], sqlen,sqhei);
 		ctx.fillStyle = 'black';
 		ctx.font = '14px Courier New black';
+		if(ctx.fillText)
 		ctx.fillText(perm[i], X[i]+4, Y[i]+12);
 		X[i+1] = X[i]+sqlen;
 		Y[i+1] = Y[i];
@@ -96,8 +99,10 @@ function permissionSquares(ctx,positionX,positionY,perm) {
 	
 }
 function drawCore(params,effective_permissions,assigned_permissions) {
-	var canvas = document.getElementById('permit');
-	var ctx = canvas.getContext('2d');
+	var canvas = initCanvas(document.getElementById("permit")),
+				    ctx = canvas.getContext('2d');
+
+	//var ctx = canvas.getContext('2d');
 
 	ctx.width = canvas.getAttribute("width");
 	ctx.height = canvas.getAttribute("height");
@@ -172,6 +177,7 @@ function drawCore(params,effective_permissions,assigned_permissions) {
 			}
 
 		if(l==4){
+			ctx.fillStyle = 'white';
 			ctx.quadraticCurveTo(curvatureX,curvatureY,ln[l].xj,Yend);	
 		}
 		else if (l==5) {
@@ -299,3 +305,10 @@ function color_permission_square(span, pi) {
 		span.innerHTML = "&nbsp;"+pi+"&nbsp;";	
 		return span;
 		}
+
+function initCanvas(canvas) {
+        if (window.G_vmlCanvasManager && window.attachEvent && !window.opera) {
+          canvas = window.G_vmlCanvasManager.initElement(canvas);
+        }
+        return canvas;
+      }

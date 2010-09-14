@@ -10,7 +10,7 @@ function trigger_s3db() {
 		s3db.url = document.getElementById('url_other').value;
 		if (!s3db.url.match(/\/$/)) {
 			s3db.url+='/';
-			document.getElementById('url_other').value = url;
+			document.getElementById('url_other').value = s3db.url;
 		}
 	}
 
@@ -28,31 +28,54 @@ function trigger_s3db() {
 	};
 	
 	if(s3db.key==='' || s3db.key==='type your key'){
-	
-	//call apilogin first
-	//authority
-	
-	s3db.username = document.getElementById('username').value;
-	s3db.password = document.getElementById('password').value;
-	s3db.authority = document.getElementById('authority').value;
-	var url2call = s3db.url+'apilogin.php?authority='+s3db.authority+'&username='+s3db.username+'&password='+s3db.password;
-	s3db.key_call =  url2call;
-	s3dbcall(url2call, 'findKey(ans)');
+		
+		//call apilogin first
+		//authority
+		s3db.username = document.getElementById('username').value;
+		s3db.password = document.getElementById('password').value;
+		s3db.authority = document.getElementById('authority').value;
+		var url2call = s3db.url+'apilogin.php?format=json&authority='+s3db.authority+'&username='+s3db.username+'&password='+s3db.password;
+		s3db.key_call =  url2call;
+		$.getJSON(url2call+'&callback=?', function (data) {
+			if (typeof(data[0].key_id)!='undefined' && data[0].key_id!='') {
+				s3db.key = data[0].key_id;
+				//document.getElementById('key').value = s3db.key;
+				hide('login');display('login_text');display('legend');display('square');
+				findUserId();
+			
+			}
+			else {
+				alert("You were not authenticated. Please try again");
+			}
+			
+		});
+
 	}
 	else {
 		//start by checking if the key is valid
 		var url2call = s3db.url+'keyCheck.php?key='+s3db.key;
-		s3dbcall(url2call, 'checkKeyValid(ans)');
-		
-		
-		
+		$.getJSON(url2call+'&format=json&callback=?', function (ans) {
+			if(ans[0].error_code=='0'){
+				hide('login');display('login_text');display('square');
+				drawCore();
+				findUserId();
+			}
+			else {
+				document.getElementById("message").innerHTML = "Key is not valid";
+				document.getElementById("message").style.color = "red";
+
+			}
+		})
+		//s3dbcall(url2call, 'checkKeyValid(ans)');
+	
 	}
 	return false;
 }
 
 function checkKeyValid(ans) {
 	if(ans[0].error_code=='0'){
-		hide('login');display('login_text');display('square');drawCore();
+		hide('login');display('login_text');display('square');
+		drawCore();
 		findUserId();
 	}
 	else {
@@ -90,11 +113,11 @@ function clickS3DB(E, I, user_id) {
 	
 	if(s3db.user_id != s3db.activeU.ind){
 	//s3db.user_id queyr has to be performed first and those children used on the intface
-	UID.compareChildren(uid, s3db.activeU.ind);
+		UID.compareChildren(uid, s3db.activeU.ind);
 	
 	}
 	else {
-	UID.children(uid, s3db.user_id, "intface.children");	
+		UID.children(uid, s3db.user_id, "intface.children");	
 	}
 	
 	//entertain the users - this must point to the children
@@ -546,25 +569,15 @@ function explainPermission(s3db_entity, s3db_clicked_id) {
 
 function findUserId() {
 	
-	var url2call = s3db.url+"URI.php?key="+s3db.key;
+	var url2call = s3db.url+"URI.php?format=json&key="+s3db.key;
 	s3db.user_call = url2call;
-	s3dbcall(url2call, 'saveUserInfo(ans)');
+	$.getJSON(url2call+'&callback=?', function (ans) {
+		s3db.user_id = ans[0].user_id;
+		s3db.user_info = ans;
+		findUsers();
+		return false;
+	});
 	
-	return false;
-}
-function findKey(ans) {
-	if (typeof(ans[0].key_id)!='undefined' && ans[0].key_id!='') {
-		s3db.key = ans[0].key_id;
-		//document.getElementById('key').value = s3db.key;
-		hide('login');display('login_text');display('legend');display('square');
-		findUserId();
-		
-		
-		
-	}
-	else {
-		alert("You were not authenticated. Please try again");
-	}
 	return false;
 }
 
@@ -582,7 +595,7 @@ function findProjects() {
 }
 
 function findUsers() {
-	url2call = s3db.url+'S3QL.php?key='+s3db.key+'&query=<S3QL><from>users</from><where><created_by>'+s3db.user_id+'</created_by></where></S3QL>';
+	url2call = s3db.url+'S3QL.php?key='+s3db.key+'&query=<S3QL><from>users</from><where></where></S3QL>';
 	s3db.user_call = url2call;
 	s3dbcall(url2call, 'displayUsers(ans)');
 	return false;
@@ -602,10 +615,23 @@ function clickUser() {
 	if(typeof(s3db.U[s3db.activeU.ind].key)=='undefined'){
 		var url2call = s3db.url+"S3QL.php?key="+s3db.key+"&query=<S3QL><insert>key</insert><where><user_id>"+s3db.activeU.user_id+"</user_id></where></S3QL>";	
 		s3db.U[s3db.activeU.ind].key_call = url2call;
-		s3dbcall(url2call, 'saveUserKey(ans)');
+		//s3dbcall(url2call, 'saveUserKey(ans)');
+		$.getJSON(url2call+'&format=json&callback=?', function (ans) {
+			if(ans[0].key_id){
+				s3db.U[s3db.activeU.ind].key = ans[0].key_id;
+				
+				if(s3db.user_id != s3db.activeU.user_id){
+					UID.projects(s3db.activeU.user_id, "intface.compareEntity('"+s3db.activeU.user_id+"', 'P')");
+				}
+				else {
+					UID.projects(s3db.user_id, "intface.displayEntity('"+s3db.user_id+"', 'P')");	
+				}
+			}
+		});
 	}
 	else {
-		if(s3db.activeU.user_id != s3db.user_id){
+		if(s3db.activeU.user_id !== s3db.user_id){
+			delete s3db.U[s3db.activeU.user_id].P;
 			UID.projects(s3db.activeU.user_id, "intface.compareEntity('"+s3db.activeU.user_id+"', 'P')");
 		}
 		else {
@@ -623,14 +649,6 @@ function clickUser() {
 }
 
 //save routines: these are callbacks that are not necessarily displayed
-
-function saveUserInfo(ans) {
-	s3db.user_id = ans[0].user_id;
-	s3db.user_info = ans;
-
-	findUsers();
-    return false;
-}
 
 //display routines: these are routines that affect the interface
 function display_effective_spans(pl, parent_id) {
@@ -668,17 +686,19 @@ function displayUsers(ans) {
 	
 	if(ans){
 		for (var i=0, il=ans.length; i<il; i++) {
-			var uuid = ans[i].user_id;
-			s3db["U"+uuid] = ans[i];
-			s3db.U[uuid] = s3db["U"+uuid];
-			
-			var opt = document.createElement('option')
-			opt.value = ans[i].user_id;
-			opt.innerHTML = ans[i].username+' (U'+ans[i].user_id+')';
-			use.appendChild(opt);
-			
+			if((ans[i].created_by==s3db.user_id || ans[i].username=='public') && ans[i].user_id!=s3db.user_id){
+				var uuid = ans[i].user_id;
+				s3db["U"+uuid] = ans[i];
+				s3db.U[uuid] = s3db["U"+uuid];
+				
+				var opt = document.createElement('option')
+				opt.value = ans[i].user_id;
+				opt.innerHTML = ans[i].username+' (U'+ans[i].user_id+')';
+				use.appendChild(opt);
+				
 
-			if(uuid==s3db.user_id){
+				if(uuid==s3db.user_id){
+				}
 			}
 		}
 	}
@@ -734,23 +754,28 @@ function clean_default(divId, def) {
 }
 
 function putTheImageInTheMiddle() {
-   win = window.innerWidth;
-   hei = window.innerHeight;
+   win = $(document).width();
+   hei = $(document).height();
    
-	document.getElementById('blue_grad').width=win;
+	//$('#blue_grad').attr('width', win);
 	//document.getElementById('square').width=win/1.5;
-	document.getElementById('square').setAttribute("width",win/1.5);
-	document.getElementById('square').height=hei;
-    document.getElementById('collections').setAttribute("height",(hei/2)-10);
-	document.getElementById('rules').height = (hei/2)-10;
+	//$('#square').attr("width",win/1.5).attr("height", hei);
+	//$('#collections').attr('height', (hei/2)-10);
+	//$('#rules').attr('height', (hei/2)-10);
+	//document.getElementById('square').height=hei;
+	//document.getElementById('square').setAttribute()(
+    // document.getElementById('collections').setAttribute("height",(hei/2)-10);
+	//document.getElementById('rules').height = (hei/2)-10;
 
 }
 function hide(div) {
-	document.getElementById(div).style.display='none';
+	//document.getElementById(div).style.display='none';
+	$('#'+div).hide();
 }
 
 function display(div) {
-	document.getElementById(div).style.display='inline';
+	//document.getElementById(div).style.display='inline';
+	$('#'+div).show();
 }
 
 function checkForm() {

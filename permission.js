@@ -193,7 +193,7 @@ var Permission = {
 			var I = uid.substr(1,uid.length-1);
 			var id_name = s3db.core.ids[E];
 			url2call = s3db.url+"S3QL.php?key="+s3db.key+"&query=<S3QL><from>users</from><where><"+id_name+">"+I+"</"+id_name+"><user_id>"+user_id+"</user_id></where></S3QL>";
-			s3dbcall(url2call, "intface.displayInaccessible(ans, '"+uid+"', '"+user_id+"')");
+			//s3dbcall(url2call, "intface.displayInaccessible(ans, '"+uid+"', '"+user_id+"')");
 		}
 }
 
@@ -218,7 +218,11 @@ function uid_call(uid, user_id, next_action) {
 	var I = uid.substr(1,uid.length-1);
 	//alert(next_action);
 	url2call = s3db.url+"S3QL.php?key="+s3db.U[s3db.activeU.ind].key+"&query=<S3QL><from>"+s3db.core.entities[E]+"</from><where><"+s3db.core.ids[E]+">"+I+"</"+s3db.core.ids[E]+"></where></S3QL>";
-	s3dbcall(url2call, 'uid_found(ans, "'+uid+'", "'+next_action+'")');
+	//s3dbcall(url2call, 'uid_found(ans, "'+uid+'", "'+next_action+'")');
+	UID.uid_call={};UID.uid_call.uid = uid;UID.uid_call.next_action = next_action;
+	$.getJSON(url2call+'&format=json&callback=?', function (ans) {
+		uid_found(ans,UID.uid_call.uid, UID.uid_call.next_action);
+	});
 	
 }
 
@@ -274,6 +278,7 @@ function permissionReIssue(ans, uid,user_was_changed,new_permission) {
 	if(typeof(s3db.U[user_was_changed][uid])=='undefined') 
 	{ 
 		s3db.U[user_was_changed][uid] = {assigned_permission : '---', effective_permission : '---' } 
+		if(console.log)
 		console.log("User "+user_was_changed+" cannot query uid "+uid+". For that reason, permission is assumed ---.");
 	};
 	
