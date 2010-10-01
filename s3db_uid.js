@@ -65,6 +65,10 @@ var UID = {
 		}
 		if(typeof(s3db.core.inherits[uid.substr(0,1)])=='undefined' || UID.completed>=s3db.core.inherits[uid.substr(0,1)].length){
 			 UID.children(uid, user_id, "intface.compareChildren");
+			
+			//now display the innaccessible
+			//intface.displayInaccessible(ans, Permission.uidQueryInaccessible.uid, Permission.uidQueryInaccessible.user_id);
+			
 			delete UID.completed;
 		}
 		else {
@@ -89,11 +93,12 @@ var UID = {
 			var E = uid.substr(0,1);
 			var I = uid.substr(1,uid.length-1);
 			var childEntities = s3db.core.inherits[E];
+			delete UID.children.thread;
 			UID.children.thread = 0;
 			//don't try to do this for statements
 			if(typeof (childEntities)!='undefined')
 			{
-				for (var i=0, il=childEntities.length; i<il; i++) {
+				for (var i=0; i<childEntities.length; i++) {
 					var childType = childEntities[i];
 					
 					if(typeof(s3db.U[user_id][uid][childType])=='undefined'){
@@ -146,7 +151,7 @@ var UID = {
 						if(typeof(next_action)!=='undefined'){
 							if(next_action.match(/\(.*\)/)){
 								eval(next_action);
-								next_action
+								//next_action
 							}
 							else {
 								eval(next_action+"('"+uid+"', "+user_id+", '"+childType+"')");

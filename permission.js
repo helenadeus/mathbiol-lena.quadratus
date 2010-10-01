@@ -189,11 +189,22 @@ var Permission = {
 			
 	},
 		uidQueryInaccessible : function (uid, user_id) {
+			
 			var E = uid.substr(0,1);
 			var I = uid.substr(1,uid.length-1);
 			var id_name = s3db.core.ids[E];
+			
+			Permission.uidQueryInaccessible.uid = uid;
+			Permission.uidQueryInaccessible.user_id = user_id;
 			url2call = s3db.url+"S3QL.php?key="+s3db.key+"&query=<S3QL><from>users</from><where><"+id_name+">"+I+"</"+id_name+"><user_id>"+user_id+"</user_id></where></S3QL>";
+			//Permission.uidQueryInaccessible.query.push(url2call+'&format=json');
 			//s3dbcall(url2call, "intface.displayInaccessible(ans, '"+uid+"', '"+user_id+"')");
+			//these queries are going too fast!! span does not exist when the query comes back, LOL
+			//save the data in a variable instead
+			$.getJSON(url2call+'&format=json&callback=?', function (ans) {
+				Permission.uidQueryInaccessible.ans.push(ans);
+				intface.displayInaccessible(ans, Permission.uidQueryInaccessible.uid, Permission.uidQueryInaccessible.user_id);
+			});
 		}
 }
 
@@ -258,7 +269,14 @@ function permissionUpdated(span_id, new_value, uid) {
 			 
 			 //callit, then user permissions need to be recalculated
 			 //console.log(url2call);
-			 s3dbcall(url2call, 'permissionReIssue(ans, "'+uid+'", "'+s3db.activeU.ind+'", "'+new_permission+'")');
+			 Permission.reIssueUID = {};
+			 Permission.reIssueUID.uid = uid;
+			 Permission.reIssueUID.new_permission = new_permission;
+			 
+			 $.getJSON(url2call+'&format=json&callback=?',function (ans) {
+				permissionReIssue(ans,  Permission.reIssueUID.uid, s3db.activeU.ind, Permission.reIssueUID.new_permission);
+			 });
+			 //s3dbcall(url2call, 'permissionReIssue(ans, "'+uid+'", "'+s3db.activeU.ind+'", "'+new_permission+'")');
 				
 
 		}

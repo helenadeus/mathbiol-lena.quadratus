@@ -36,6 +36,7 @@ function trigger_s3db() {
 		s3db.authority = document.getElementById('authority').value;
 		var url2call = s3db.url+'apilogin.php?format=json&authority='+s3db.authority+'&username='+s3db.username+'&password='+s3db.password;
 		s3db.key_call =  url2call;
+		
 		$.getJSON(url2call+'&callback=?', function (data) {
 			if (typeof(data[0].key_id)!='undefined' && data[0].key_id!='') {
 				s3db.key = data[0].key_id;
@@ -96,6 +97,9 @@ function clickS3DB(E, I, user_id) {
 
 	//Define the active state - for backward compatibility
 	var s3_id = s3db.core.ids[E];
+	s3db["active"]=uid;
+	s3db["activeE"]=E;
+	s3db["activeID"]=I;
 	s3db["active"+E]=[];
 	s3db["active"+E].ind = document.getElementById(E+I).getAttribute("active_ind")*1;
 	s3db["active"+E][s3_id] = I;
@@ -113,15 +117,74 @@ function clickS3DB(E, I, user_id) {
 	
 	if(s3db.user_id != s3db.activeU.ind){
 	//s3db.user_id queyr has to be performed first and those children used on the intface
+		intface.children.thread = 0;
+		intface.children.threadMax = s3db.core.inherits[E].length;
 		UID.compareChildren(uid, s3db.activeU.ind);
 	
 	}
 	else {
+		intface.children.thread = 0;
+		intface.children.threadMax = s3db.core.inherits[E].length;
+		//clear the box for the children coming 
+		
 		UID.children(uid, s3db.user_id, "intface.children");	
 	}
 	
 	//entertain the users - this must point to the children
 	//loading(s3db.core.boxes[E], s3db.core.ids[E]+"_loading");
+	//add a line to add new user to the entity
+	$('#new_user').html('');
+	$('#new_user').append(
+		$(document.createElement("a")).attr('href', '#').html('Add a new user to selected '+s3db.core.entities[E]).click(
+		function (event, E, I, user_id) {
+			
+			$('#new_user').append(
+			$(document.createElement('div')).attr('id', 'error_message').html('Please input here the UID of the user you wish to add:'))
+				.append(		
+				$(document.createElement('input')).attr('type','text').attr('id','new_user_id'))
+				.append(
+					$(document.createElement('input')).attr('type','button').attr('value','Go!').click(
+						function (E, I, user_id) {
+							if($('#new_user_id').val()!==""){
+								s3db.newUserID = $('#new_user_id').val();
+								var activeUID = s3db["active"];
+								var entityUID_id = s3db.core.ids[s3db["activeE"]];
+								//is provided user a valid user_id? 
+								//var s3qlC = 'insert(U|'+activeUID+','+$('#new_user_id').val())
+								var validateU = s3db.url+'URI.php?key='+s3db.key+'&uid='+s3db.newUserID;
+								
+								$.getJSON(validateU+'&format=json&callback=?',
+										function (ans) {
+											if(typeof(ans[0].error_code)!=='undefined'){
+												$('#error_message').attr('style', 'color:red').html(ans[0].message);
+											}
+											else {
+												var entityName_id = s3db.core.ids[s3db["activeE"]];
+												
+												s3db.U[s3db.newUserID] = ans[0];
+												var writeU = s3db.url+'S3QL.php?key='+s3db.key+'&query=<S3QL><insert>user</insert><where><user_id>'+s3db.newUserID+'</user_id><'+entityName_id+'>'+s3db["activeID"]+'</'+entityName_id+'></where></S3QL>';
+												$.getJSON(writeU+'&format=json&callback=?', 
+													function (ans) {
+														if(ans[0].error_code===0){
+															$('#user_id').append('<option value="'+s3db.newUserID+'">'+s3db.U[s3db.newUserID].account_uname+' ('+s3db.newUserID+')</option>');	
+															$('#error_message').attr('style', 'color:green').html("New user added to Users");
+
+														}
+													}	
+												
+												);
+											}
+										}
+								);
+								
+							}
+						}
+					)
+				)
+			}
+		)		
+	);
+
 }
 
 function trimS3DB(s3db_entity, params1, params2){
