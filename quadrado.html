@@ -8,7 +8,7 @@
     <script type="text/javascript" src="http://canvas-text.googlecode.com/svn/trunk/canvas.text.js"></script>
     <script type="text/javascript" src="http://canvas-text.googlecode.com/svn/trunk/faces/optimer-normal-normal.js"></script>
 	<![endif]-->
- <script type="text/javascript" src="s3dbcall.js"></script> 
+<!--  <script type="text/javascript" src="s3dbcall.js"></script> --> 
  <!-- <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.min.js"></script> -->
  <script type="text/javascript" src="jquery.js"></script>
  <script type="text/javascript" src="rightclickmenu.js"></script>
@@ -19,9 +19,9 @@
  <script type="text/javascript" id="quadrado" src="quadrado.js"></script>
  </head>
 
-<!-- <body onload="document.getElementById('url').value='http://204.232.200.16/s3dbdemo/';document.getElementById('key').value='1B1YXjp77JCKwWd'; document.getElementById('go').style.display='inline';document.getElementById('go').click()"> -->
-<body onload="document.getElementById('url').value='other';document.getElementById('url_other').value='http://localhost/s3db_distributed/Staphylococcus_spp/';document.getElementById('key').value='fr5hGAg0eF1ioxm'; document.getElementById('go').style.display='inline';document.getElementById('go').click()">
-
+<body onload="document.getElementById('url').value='http://204.232.200.16/s3dbdemo/';document.getElementById('key').value='1B1YXjp77JCKwWd'; document.getElementById('go').style.display='inline';document.getElementById('go').click()"> 
+<!-- <body onload="document.getElementById('url').value='other';document.getElementById('url_other').value='http://localhost/s3db_distributed/Staphylococcus_spp/';document.getElementById('key').value='1B1YXjp77JCKwWd'; document.getElementById('go').style.display='inline';document.getElementById('go').click()">
+ -->
 <!-- <body> -->
 
 	  
@@ -34,7 +34,8 @@
 				
 				<tr><td>
 				<select id="url" onChange="display_other()" onClick="display_other()">
-					<option value="http://204.232.200.16/s3db2/">Staphylococcus Demo deployment</option>
+					<option value="http://204.232.200.16/staphylococcus_demo/">Staphylococcus Demo deployment</option>
+					<option value="http://204.232.200.16/mlst_demo/">Staphylococcus Demo deployment</option>
 					<option value="http://204.232.200.16/s3dbdemo/">GI clinical trials demo</option>
 					<option value="http://ibl.mdanderson.org/edu/">EDU deployment</option>
 					<option value="http://ibl.mdanderson.org/TCGA/">TCGA deployment</option>

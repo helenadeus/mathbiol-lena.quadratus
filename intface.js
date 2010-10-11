@@ -68,7 +68,18 @@ var intface = {
 	},
 
 	children : function (uid, user_id, childType) {
+		if(typeof(Permission.uidQueryInaccessible.thread)=='undefined'){
+			Permission.uidQueryInaccessible.thread = {};//undefined for the first childType but not for the subsequent
+		}
+		Permission.uidQueryInaccessible.thread[user_id+'_'+childType+'_'+uid] = 0;
+		
 		intface.children.thread++;
+		
+		if(typeof(Permission.uidQueryInaccessible.uidToVerify)=='undefined'){
+			Permission.uidQueryInaccessible.uidToVerify = {};
+		}
+		Permission.uidQueryInaccessible.uidToVerify[user_id+'_'+childType+'_'+uid] = [];
+		
 		//remove loading
 		if(document.getElementById(s3db.core.ids[childType]+"_loading"))
 		{remove_element(s3db.core.ids[childType]+"_loading");}
@@ -93,7 +104,7 @@ var intface = {
 		
 		//Starting building a div for every uid; 2 span triple boxes for permissions
 		if(data){
-			Permission.uidQueryInaccessible.thread = 0;
+			
 				for (var c_uid in data) {
 				
 				var opt = document.createElement('div'); 
@@ -173,41 +184,58 @@ var intface = {
 					//console.log("finding permission for "+c_uid);
 					//Permission.uidQueryInaccessible(c_uid, s3db.activeU.ind);
 					url2call = s3db.url+"S3QL.php?key="+s3db.key+"&query=<S3QL><from>users</from><where><"+id_name+">"+I+"</"+id_name+"><user_id>"+s3db.activeU.ind+"</user_id></where></S3QL>";
-					if(typeof(Permission.uidQueryInaccessible.uidToVerify)==='undefined'){
-						Permission.uidQueryInaccessible.uidToVerify = [];
+					
+					Permission.uidQueryInaccessible.uidToVerify[user_id+'_'+childType+'_'+uid].push(c_uid);
+					
+					//save for getJONS
+					if(typeof(intface.children.user_id)=='undefined') intface.children.user_id = [];
+					if(typeof(intface.children.childType)=='undefined')  intface.children.childType = [];
+					if(typeof(intface.children.uid)=='undefined') intface.children.uid = [];
+					intface.children.user_id.push(user_id);
+					intface.children.childType.push(childType);
+					intface.children.uid.push(uid);
+					if(typeof(intface.queryInnaccessibleThread)=='undefined'){
+						intface.queryInnaccessibleThread = 0;
 					}
-					Permission.uidQueryInaccessible.uidToVerify.push(c_uid);
-
 					
 					$.getJSON(url2call+'&format=json&callback=?', function (ans) {
-						var ind = Permission.uidQueryInaccessible.thread;
-						Permission.uidQueryInaccessible.thread++;
 						
-						var uid = Permission.uidQueryInaccessible.uidToVerify[ind];
+						//retrieve saved; NEEDS TESTING
+						var user_id = intface.children.user_id[intface.queryInnaccessibleThread];
+						var childType = intface.children.childType[intface.queryInnaccessibleThread];
+						var uid = intface.children.uid[intface.queryInnaccessibleThread];
+						var ind = Permission.uidQueryInaccessible.thread[user_id+'_'+childType+'_'+uid];
+						
+						intface.queryInnaccessibleThread++;
+
+						//one child of type childType for user user_id, child of uid, was found
+						Permission.uidQueryInaccessible.thread[user_id+'_'+childType+'_'+uid]++;
+						
+						var c_uid = Permission.uidQueryInaccessible.uidToVerify[user_id+'_'+childType+'_'+uid][ind];
 						var user_id = s3db.activeU.ind;
-						if(ans && typeof(s3db.U[user_id][uid])!='undefined'){
-							s3db.U[user_id][uid].assigned_permission =  ans[0].assigned_permissionOnEntity;
-							s3db.U[user_id][uid].effective_permission =  ans[0].effective_permissionOnEntity;
+						if(ans && typeof(s3db.U[user_id][c_uid])!='undefined'){
+							s3db.U[user_id][c_uid].assigned_permission =  ans[0].assigned_permissionOnEntity;
+							s3db.U[user_id][c_uid].effective_permission =  ans[0].effective_permissionOnEntity;
 							
 							//finally it can be visualized
 							//C1217820_assigned_0
 							
 							//Alter assigned
-							var l =  s3db.U[user_id][uid].assigned_permission.length;
+							var l =  s3db.U[user_id][c_uid].assigned_permission.length;
 							for (var i=0; i<l; i++) {
-								var span = document.getElementById(uid+"_assigned_"+i);
+								var span = document.getElementById(c_uid+"_assigned_"+i);
 								if(span){
-									intface.color_permission_square(span, s3db.U[user_id][uid].assigned_permission[i]);
+									intface.color_permission_square(span, s3db.U[user_id][c_uid].assigned_permission[i]);
 								
 								}
 							}
 
 							//Alter effective
-							var l =  s3db.U[user_id][uid].effective_permission.length;
+							var l =  s3db.U[user_id][c_uid].effective_permission.length;
 							for (var i=0; i<l; i++) {
-								var span = document.getElementById(uid+"_perm_"+i);
+								var span = document.getElementById(c_uid+"_perm_"+i);
 								if(span){
-									intface.color_permission_square(span, s3db.U[user_id][uid].effective_permission[i]);
+									intface.color_permission_square(span, s3db.U[user_id][c_uid].effective_permission[i]);
 								
 								}
 							}
@@ -359,7 +387,8 @@ var intface = {
 		var I = uid.substr(1,uid.strlen-1);
 		var L = s3db.core.labels[childType];
 		var S3DB_ID = s3db.core.ids[E];
-		var childEntities = s3db.core.inherits[E];
+		//var childEntities = s3db.core.inherits[E];
+		var childEntities = s3db.core.inherits[childType];
 		//This will be the complete data; permissions will be added from the user being queried
 		var completedata = s3db[uid][childType];
 		//This will be the data that teh selected user can see

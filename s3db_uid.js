@@ -93,8 +93,9 @@ var UID = {
 			var E = uid.substr(0,1);
 			var I = uid.substr(1,uid.length-1);
 			var childEntities = s3db.core.inherits[E];
-			delete UID.children.thread;
-			UID.children.thread = 0;
+			//delete UID.children.thread;
+			UID.children.thread = {};
+			UID.children.thread[user_id]={};UID.children.thread[user_id][uid]=0;
 			//don't try to do this for statements
 			if(typeof (childEntities)!='undefined')
 			{
@@ -126,9 +127,15 @@ var UID = {
 							UID.children.childEntities = childEntities;UID.children.uid = uid;
 							UID.children.user_id = user_id; UID.children.next_action = next_action;
 							$.getJSON(url2call+'&format=json&callback=?', function (ans) {
-								variableI = UID.children.thread;
+								variableI = UID.children.thread[UID.children.user_id][UID.children.uid];
+								//this is one of those ridiculous things I hard fix but I don't know what else to do; childType of OK, but when I change it , it messes up the part that is working 
+								
+								if(variableI>(UID.children.childEntities.length-1)) 
+									{variableI = (UID.children.childEntities.length-1);
+									}
+								
 								UID.childrenFound(ans, UID.children.childEntities[variableI],UID.children.uid, UID.children.user_id,UID.children.next_action);
-								UID.children.thread++;
+								UID.children.thread[UID.children.user_id][UID.children.uid]++;
 							});
 							//s3dbcall(url2call, 'UID.childrenFound(ans, "'+childEntities[i]+'", "'+uid+'", "'+user_id+'","'+next_action+'")');
 						}
@@ -137,10 +144,15 @@ var UID = {
 							UID.uid_call_children = url2call;
 							UID.children.childEntities = childEntities;UID.children.uid = uid;
 							UID.children.user_id = user_id; UID.children.next_action = next_action;
+							UID.children.childType = childType;
 							$.getJSON(url2call+'&format=json&callback=?', function (ans) {
-								variableI = UID.children.thread;
+								variableI = UID.children.thread[UID.children.user_id][UID.children.uid];
+								//this is one of those ridiculous things I hard fix but I don't know what else to do; childType of OK, but when I change it , it messes up the part that is working 
+								if(variableI>(UID.children.childEntities.length-1)) 
+									{ variableI = (UID.children.childEntities.length-1);
+									}
 								UID.childrenFound(ans, UID.children.childEntities[variableI],UID.children.uid, UID.children.user_id,UID.children.next_action);
-								UID.children.thread++;
+								UID.children.thread[UID.children.user_id][UID.children.uid]++;
 							});
 							//s3dbcall(url2call, 'UID.childrenFound(ans, "'+childEntities[i]+'", "'+uid+'", "'+user_id+'","'+next_action+'")');
 						}															
